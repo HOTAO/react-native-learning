@@ -10,8 +10,8 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import px2dp from '../../utils/px2dp';
 import theme from '../../utils/theme';
-import api from '../../api/api'
-import baseApi from '../../api/baseApi'
+import api from '../api/api'
+import baseApi from '../api/baseApi'
 
 export default class HomeFragment extends Component {
   render() {

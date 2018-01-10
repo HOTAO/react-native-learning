@@ -1,15 +1,15 @@
 /*
  * @Author: HT
  * @Date: 2018-01-04 17:17:24
- * @Last Modified by:   HT
- * @Last Modified time: 2018-01-04 17:17:24
+ * @Last Modified by: HT
+ * @Last Modified time: 2018-01-10 13:58:51
  */
 
 'use strict';
 
 import {Platform, Dimensions, PixelRatio, StatusBar} from 'react-native';
 import colors from './colors';
-import px2dp from '../utils/px2dp';
+import px2dp from './px2dp';
 
 export default {
     //mainThemeColor: favoriteColor,
