@@ -8,5 +8,9 @@ export default api = {
   fetchDataMore(category) {
     const url = baseApi.category + category;
     return fetch(url).then((response) => response.json())
+  },
+  HomePageData(category) {
+    const url = baseApi.daily + category
+    return fetch(url).then(response => response.json())
   }
 }

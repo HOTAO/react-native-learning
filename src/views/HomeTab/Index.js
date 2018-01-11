@@ -1,163 +1,141 @@
 import React, {Component} from 'react'
-import {
-  View,
-  Text,
-  Image,
-  FlatList,
-  TouchableOpacity,
-  Modal
-} from 'react-native';
+import PropTypes from 'prop-types'
+import {View, Text, Image, ScrollView, Animated, RefreshControl} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import px2dp from '../../utils/px2dp';
 import theme from '../../utils/theme';
-import api from '../api/api'
-import baseApi from '../api/baseApi'
+import api from '../../api/api'
+import {getCurrentDate} from '../../utils/getDate';
+import NavigationBar from '../../components/NavigationBar';
+import * as Info from '../../utils/handleHomeDataSource';
+import settingState from '../../utils/settingState'
+import HomeList from '../../components/HomeList'
 
 export default class HomeFragment extends Component {
   render() {
     return (
-      <View style={styles.home}>
-        <FlatList
-          onRefresh={this._refresh}
-          refreshing={false}
-          onEndReached={this._getMore}
-          onEndReachedThreshold={0.1}
-          numColumns={2}
-          data={this.state.imgs}
-          keyExtractor={this._keyExtractor}
-          renderItem={this
-          ._renderItem
-          .bind(this)}/>
-        <Modal visible={this.state.modalVisible}>
-          <View style={styles.modalBackground}>
-            <Image
-              resizeMode='contain'
-              style={styles.modalImg}
-              style={{width: this.state.imageWidth, height: this.state.imageHeight}}
-              source={{uri: this.state.imageUrl}}
-              />
-          </View>
-          <View style={styles.closeBtn}>
-            <TouchableOpacity
-              onPress={this._triggerModal.bind(this)}
-              activeOpacity={theme.touchableOpacityActiveOpacity}>
-              <Icon name="ios-close-circle-outline" color="#fff" size={px2dp(30)}/>
-            </TouchableOpacity>
-          </View>
-        </Modal>
+      <View>
+        <Animated.View style={[styles.toolbar, {opacity: this.state.opacity}]}>
+            {/* <NavigationBar title="最新干货"/> */}
+            <Text>最新干活</Text>
+        </Animated.View>
+        <ScrollView
+          onScroll={this._onScroll.bind(this)}
+          refreshControl={
+            <RefreshControl
+                refreshing={this.state.loading}
+                onRefresh={this._onPress.bind(this, 0)}
+                tintColor={'#fff'}
+                colors={['#fff']}
+                title="拼命加载中..."
+            />}>
+            <View>
+              <View>
+                <ImageView imgUrl={Info.getFuLiUrl(this.state.homeData)} labelTime={this.state.headerTime}></ImageView>
+              </View>
+              <View style={styles.scrollContents}>
+                {this.state.displayOrder.map((item, i) => {
+                  {item}
+                  if (item !== '福利' && Info.getTargetList(this.state.homeData, item) != null)
+                    return (
+                      <HomeList
+                        key={i}
+                        navigator={this.props.navigator}
+                        dataSource={Info.getTargetList(this.state.homeData, item)}
+                        headerTitle={item}/>
+                    );
+                  }
+                )}
+              </View>
+            </View>
+        </ScrollView>
       </View>
     )
   }
   state = {
-    modalVisible: false,
-    imageUrl: null,
-    imageWidth: null,
-    imageHeight: null,
-    page: 1,
-    imgs: []
+    displayOrder: settingState.displayOrder,
+    homeData: {},
+    category: [],
+    loading: false,
+    opacity: new Animated.Value(0),
+    headerTime: getCurrentDate()
   }
   componentDidMount() {
     this._fetchData()
   }
+  _onPress(id) {
+    if (id === 0)
+        this._fetchData();
+    else if (id === 1)
+        ;
+  }
+  _onScroll(event){
+    var offsetY = event.nativeEvent.contentOffset.y;
+    if(offsetY <= this.imageHeight - theme.toolbar.height){
+        var opacity = offsetY / (this.imageHeight - theme.toolbar.height);
+        this.setState({opacity: opacity});
+    }else{
+        this.setState({opacity: 1});
+    }
+}
   _fetchData() {
+    this.setState({loading: true})
     const that = this
     api
-      .fetchData('福利/20/1')
+      .HomePageData('2017/01/10')
       .then(function (data) {
-        that.setState({imgs: data.results})
+        that.setState({homeData: data,loading: false})
       })
       .catch(function (e) {
         console.log(e);
       });
   }
-  _fetchDataMore() {
-    const that = this
-    api.fetchDataMore('福利/20/' + that.state.page+1)
-      .then(function (data) {
-        that.setState({imgs: that.state.imgs.concat(data.results), page: that.state.page+1})
-      })
-      .catch(function (e) {
-        console.log(e);
-      });
-  }
-  _renderItem({item}) {
-    return (
-      <TouchableOpacity onPress={() => this._itemOnPress(item)}>
-        <Image
-          resizeMode='stretch'
-          style={styles.itemImg}
-          source={{
-          uri: item.url
-        }}/>
-      </TouchableOpacity>
-    )
-  }
-  _keyExtractor = (item, index) => item._id
-  _refresh = () => console.log('asd')
-  _getMore = () => {
-    this._fetchDataMore()
-  }
-  _itemOnPress = (item) => {
-    this.setState({modalVisible: true, imageUrl: item.url})
-    this._fetchHDImage(item.url)
-  }
-  _triggerModal = () => this.setState({
-    modalVisible: !this.state.modalVisible
-  })
-  _fetchHDImage(url){
-    var correctWidth = theme.screenWidth;
-    var correctHeight = theme.screenWidth;
-    Image.getSize(url, (width, height)=>{
-        const ratioWidth = theme.screenWidth / width;
-        const ratioHeight = theme.screenHeight / height;
-        if(ratioWidth > ratioHeight){
-            correctWidth = ratioHeight*width;
-            correctHeight = theme.screenHeight;
-        }else{
-            correctWidth = theme.screenWidth;
-            correctHeight = ratioWidth*height;
-        }
-        this.setState({imageUrl: url, imageWidth: correctWidth, imageHeight: correctHeight});
-    }, (error)=>{
-        this.setState({imageUrl: url, imageWidth: correctWidth, imageHeight: correctHeight});
-    })
 }
+class ImageView extends Component {
+  static propTypes = {
+    imgUrl: PropTypes.string,
+    labelTime: PropTypes.string
+  }
+  render() {
+    return (
+      <View style={styles.container}>
+        <Image
+          source={{
+          uri: this.props.imgUrl
+        }}
+          style={styles.img}/>
+        <View style={styles.dateLabel}>
+          <Text style={styles.label}>{this.props.labelTime}</Text>
+        </View>
+      </View>
+    );
+  }
 }
 const styles = {
-  aaa: {
-    color: '#fff'
-  },
-  home: {
-    flex: 1,
-    width: theme.screenWidth,
-    height: theme.screenWidth / 2,
-    padding: px2dp(3)
-  },
-  itemImg: {
-    width: theme.screenWidth / 2 - px2dp(9),
-    height: theme.screenWidth / 2,
-    margin: px2dp(3)
-  },
-  modalBackground: {
-    width: theme.screenWidth,
-    height: theme.screenHeight,
-    backgroundColor: 'rgba(0,0,0,0.9)',
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  closeBtn: {
+  toolbar: {
     position: 'absolute',
-    top: 0,
+    width: theme.screenWidth,
+    zIndex: 1
+  },
+  img: {
+    width: theme.screenWidth,
+    height: px2dp(400),
+    resizeMode: 'cover'
+  },
+  dateLabel: {
+    backgroundColor: 'rgba(0,0,0,.5)',
+    position: 'relative',
     width: theme.screenWidth,
     height: px2dp(50),
-    alignItems: 'flex-end',
-    justifyContent: 'flex-start',
-    paddingTop: px2dp(20),
-    paddingRight: px2dp(20),
-    zIndex: 1,
-    backgroundColor: 'transparent'
+    bottom: px2dp(50),
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center'
   },
-  modalImg: {
-    width: theme.screenWidth
+  label: {
+    color: '#fff',
+    fontSize: px2dp(20),
+    marginRight: px2dp(20),
+    fontWeight: 'bold'
   }
 }

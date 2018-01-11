@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "electron": "^1.7.10",
+    "prop-types": "^15.6.0",
     "react": "16.0.0",
     "react-native": "0.51.0",
     "react-native-tab-navigator": "^0.3.4",
