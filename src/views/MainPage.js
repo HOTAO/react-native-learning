@@ -8,9 +8,9 @@ import theme from '../utils/theme'
 import px2dp from '../utils/px2dp';
 
 class MainPage extends Component{
-
   render(){
-      return(
+    const { navigate } = this.props.navigation;
+    return(
         <View style={styles.baseContent}>
           <BottomTabBar
               navigator={this.props.navigator}
@@ -96,9 +96,10 @@ const styles = {
       paddingTop: Platform.OS === 'android' ? px2dp(6) : px2dp(3)
   },
   baseContent: {
-    paddingTop: px2dp(20),
+    // paddingTop: px2dp(20),
     height: '100%',
-    flex: 1
+    flex: 1,
+    backgroundColor: '#fff'
   }
 }
 

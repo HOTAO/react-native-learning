@@ -2,7 +2,7 @@
  * @Author: HT
  * @Date: 2018-01-11 10:58:14
  * @Last Modified by: HT
- * @Last Modified time: 2018-01-11 17:11:28
+ * @Last Modified time: 2018-01-15 10:29:13
  */
 'use strict';
 
@@ -14,6 +14,7 @@ import theme from '../utils/theme';
 import Avatar from './Avatar';
 import Icon from 'react-native-vector-icons/Ionicons';
 import settingState from '../utils/settingState'
+// import WebViewPage from '../containers/WebViewPage';
 
 class HomeList extends Component {
   static propTypes = {
@@ -62,15 +63,14 @@ class HomeList extends Component {
   _keyExtractor = (item, index) => item._id
   _refresh = () => console.log('asd')
   _itemOnPress(rowData) {
-    this
-      .props
-      .navigator
-      .push({
-        component: WebViewPage,
-        args: {
-          rowData: rowData
-        }
-      });
+    console.log(rowData)
+    console.log(this.props.navigator)
+    // this.props.navigator.push({
+    //   component: WebViewPage,
+    //   args: {
+    //     rowData: rowData
+    //   }
+    // });
   }
   _renderItem(rowData, sectionID, rowID, highlightRow) {
     return (

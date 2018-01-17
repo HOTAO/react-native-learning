@@ -13,12 +13,9 @@ import HomeList from '../../components/HomeList'
 
 export default class HomeFragment extends Component {
   render() {
+    console.log(this.props.navigator)
     return (
       <View>
-        <Animated.View style={[styles.toolbar, {opacity: this.state.opacity}]}>
-            {/* <NavigationBar title="最新干货"/> */}
-            <Text>最新干活</Text>
-        </Animated.View>
         <ScrollView
           onScroll={this._onScroll.bind(this)}
           refreshControl={
@@ -82,8 +79,9 @@ export default class HomeFragment extends Component {
     this.setState({loading: true})
     const that = this
     api
-      .HomePageData('2017/01/10')
+      .HomePageData('2018/01/10')
       .then(function (data) {
+        console.log(data)
         that.setState({homeData: data,loading: false})
       })
       .catch(function (e) {
@@ -112,6 +110,9 @@ class ImageView extends Component {
   }
 }
 const styles = {
+  container: {
+    flex: 1,
+  },
   toolbar: {
     position: 'absolute',
     width: theme.screenWidth,
